@@ -1,14 +1,17 @@
 <?php
 
-require_once 'Tokenizer.php';
+/* Будет три уровня парсинга:
+ * - уровень книги, разбивающий книгу на главы;
+ * - уровень главы, разбивающий ее на абзацы;
+ * - уровень абзаца, разбивающий его на слова;
+ * Парсер верхнего уровня использует парсер более низкого уровня.
+ */
 
-//$sentenceEn = 'Sherlock Holmes took his bottle from the corner of the mantel-piece and ' .
-//    'his hypodermic syringe from its neat morocco case.';
+require_once 'ChapterParser.php';
 
-$sentenceEn = 'The men outside shouted and applauded, while Beauty Smith, in an ecstasy ' .
-    'of delight, gloated over the ripping and mangling performed by White Fang.';
+$text = file_get_contents('./content/sign_of_four/source.en.txt');
 
-$wordsEn = Tokenizer::toString($sentenceEn);
-$arrayEn = explode('|', $wordsEn);
+$chapterParser = new ChapterParser('utf-8');
+$allWords = $chapterParser->parseText($text, ChapterParser::PARAGRAPH_DIVIDER_ONE);
 
-echo print_r($arrayEn, True) . PHP_EOL;
+file_put_contents('./content/sign_of_four/one.en.txt', print_r($allWords, True));
