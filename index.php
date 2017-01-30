@@ -8,10 +8,15 @@
  */
 
 require_once 'ChapterParser.php';
+require_once 'BookParser.php';
 
-$text = file_get_contents('./content/sign_of_four/source.en.txt');
+$book = file_get_contents('./content/sign_of_four/one.en.txt');
 
-$chapterParser = new ChapterParser('utf-8');
-$allWords = $chapterParser->parseText($text, ChapterParser::PARAGRAPH_DIVIDER_ONE);
+$bookParser = new BookParser(
+    'utf-8',
+    BookParser::CHAPTER_DIVIDER,
+    ChapterParser::PARAGRAPH_DIVIDER_ONE
+);
 
-file_put_contents('./content/sign_of_four/one.en.txt', print_r($allWords, True));
+$result = $bookParser->parseBook($book);
+file_put_contents('./content/sign_of_four/two.en.txt', print_r($result, True));

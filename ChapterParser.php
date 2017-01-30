@@ -6,19 +6,22 @@ class ChapterParser
 {
     const PARAGRAPH_DIVIDER_ONE = '/(\r\n){2,}/';
     const PARAGRAPH_DIVIDER_TWO = '/\n{2,}/';
+    const SEPARATOR = '<-SEPARATOR->';
 
     private $encoding = '';
+    private $paragraphDivider = '';
 
-    public function __construct($encoding)
+    public function __construct($encoding, $paragraphDivider)
     {
         $this->encoding = $encoding;
+        $this->paragraphDivider = $paragraphDivider;
     }
 
-    public function parseText($text, $paragraphDivider)
+    public function parseChapter($text)
     {
         $allWords = [];
-        $text = preg_replace($paragraphDivider, "<-SEPARATOR->", $text);
-        $paragraphs = explode("<-SEPARATOR->", $text);
+        $text = preg_replace($this->paragraphDivider, self::SEPARATOR, $text);
+        $paragraphs = explode(self::SEPARATOR, $text);
         $parser = new ParagraphParser($this->encoding);
 
         foreach ($paragraphs as $paragraph) {
