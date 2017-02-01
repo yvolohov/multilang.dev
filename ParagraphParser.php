@@ -2,7 +2,8 @@
 
 class ParagraphParser
 {
-    const PATTERN = '[A-Za-zА-Яа-я0-9\'\"\-]{1,}';
+    const WORD_PATTERN = '[A-Za-zА-Яа-я0-9\'\"\-]{1,}';
+    const UPPERCASE_PATTERN = '[A-ZА-Я]';
 
     private $encoding = '';
 
@@ -35,11 +36,7 @@ class ParagraphParser
             if ($prevSymbolType !== $currSymbolType && !($isDivider)) {
 
                 if ($prevSymbolType == 1) {
-                    $word = $this->cutQuotes($word);
-
-                    if ($word) {
-                        $words[$word] = (array_key_exists($word, $words)) ? $words[$word] + 1 : 1;
-                    }
+                    $this->addWordToList($words, $word);
                 }
 
                 $word = '';
@@ -53,14 +50,7 @@ class ParagraphParser
         }
 
         if (mb_strlen($word, $this->encoding) > 0) {
-
-            if (mb_ereg_match(self::PATTERN, $word)) {
-                $word = $this->cutQuotes($word);
-
-                if ($word) {
-                    $words[$word] = (array_key_exists($word, $words)) ? $words[$word] + 1 : 1;
-                }
-            }
+            $this->addWordToList($words, $word, true);
         }
 
         return $words;
@@ -71,7 +61,7 @@ class ParagraphParser
         if ($pSymbol === "\x9" || $pSymbol === "\x20") {
             return 0;
         }
-        else if (mb_ereg_match(self::PATTERN, $pSymbol)) {
+        else if (mb_ereg_match(self::WORD_PATTERN, $pSymbol)) {
             return 1;
         }
         else {
@@ -79,13 +69,42 @@ class ParagraphParser
         }
     }
 
-    private function cutQuotes($word) {
-        $word = mb_strtolower($word, $this->encoding);
+    private function addWordToList(&$list, $token, $check=false)
+    {
+        /* token is not a word */
+        if ($check && !mb_ereg_match(self::WORD_PATTERN, $token)) {
+            return;
+        }
+
+        /* cut quotes */
+        $result = $this->cutQuotes($token);
+
+        if (!$result) {
+            return;
+        }
+
+        $upperCase = $this->isUpperCase($result);
+        $word = mb_strtolower($result, $this->encoding);
+
+        if (array_key_exists($word, $list)) {
+            $list[$word]['words_count'] = $list[$word]['words_count'] + 1;
+            $list[$word]['uppercase'] = ($upperCase) ? 1 : $list[$word]['uppercase'];
+            $list[$word]['lowercase'] = (!$upperCase) ? 1 : $list[$word]['lowercase'];
+        }
+        else {
+            $list[$word]['words_count'] = 1;
+            $list[$word]['uppercase'] = ($upperCase) ? 1 : 0;
+            $list[$word]['lowercase'] = (!$upperCase) ? 1 : 0;
+        }
+    }
+
+    private function cutQuotes($word)
+    {
         $length = mb_strlen($word, $this->encoding);
         $firstSymbol = mb_substr($word, 0, 1, $this->encoding);
         $lastSymbol = mb_substr($word, $length - 1, 1, $this->encoding);
-        $cutFromLeft = ($firstSymbol == '"' || $firstSymbol == "'") ? 1 : 0;
-        $cutFromRight = ($lastSymbol == '"' || $lastSymbol == "'") ? 1 : 0;
+        $cutFromLeft = ($firstSymbol == "\"" || $firstSymbol == "\'") ? 1 : 0;
+        $cutFromRight = ($lastSymbol == "\"" || $lastSymbol == "\'") ? 1 : 0;
         $cutAll = $cutFromLeft + $cutFromRight;
 
         if ($cutAll >= $length) {
@@ -96,5 +115,11 @@ class ParagraphParser
         $length =  mb_strlen($word, $this->encoding);
         $word = mb_substr($word, $cutFromLeft, $length, $this->encoding);
         return $word;
+    }
+
+    private function isUpperCase($word)
+    {
+        $firstSymbol = mb_substr($word, 0, 1, $this->encoding);
+        return (mb_ereg_match(self::UPPERCASE_PATTERN, $firstSymbol)) ? true : false;
     }
 }

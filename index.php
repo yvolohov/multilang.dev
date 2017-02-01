@@ -12,7 +12,7 @@ require_once 'BookParser.php';
 require_once 'DatabaseHelper.php';
 
 /* DB */
-$dbh = new DatabaseHelper('127.0.0.1', 'multilang.db', 'root', '', 'utf8');
+//$dbh = new DatabaseHelper('127.0.0.1', 'multilang.db', 'root', '', 'utf8');
 
 /* English */
 $bookEn = file_get_contents('./content/sign_of_four/one.en.txt');
@@ -23,7 +23,8 @@ $bookParserEn = new BookParser(
 );
 
 $resultEn = $bookParserEn->parseBook($bookEn);
-$dbh->writeWords('words_en', 1, $resultEn);
+file_put_contents('./content/sign_of_four/two.en.txt', print_r($resultEn, true));
+//$dbh->writeWords('words_en', 1, $resultEn);
 
 /* Russian */
 $bookRu = file_get_contents('./content/sign_of_four/one.ru.txt');
@@ -34,4 +35,5 @@ $bookParserRu = new BookParser(
 );
 
 $resultRu = $bookParserRu->parseBook($bookRu);
-$dbh->writeWords('words_ru', 1, $resultRu);
+file_put_contents('./content/sign_of_four/two.ru.txt', print_r($resultRu, true));
+//$dbh->writeWords('words_ru', 1, $resultRu);

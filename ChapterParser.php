@@ -27,8 +27,22 @@ class ChapterParser
         foreach ($paragraphs as $paragraph) {
             $words = $parser->toArray($paragraph);
 
-            foreach ($words as $word => $count) {
-                $allWords[$word] = (array_key_exists($word, $allWords)) ? $allWords[$word] + $count : $count;
+            foreach ($words as $word => $wordParams) {
+
+                if (array_key_exists($word, $allWords)) {
+                    $allWords[$word]['words_count'] = $allWords[$word]['words_count'] + $wordParams['words_count'];
+                    $allWords[$word]['uppercase'] = ($wordParams['uppercase'] > 0) ? 1 : $allWords[$word]['uppercase'];
+                    $allWords[$word]['lowercase'] = ($wordParams['lowercase'] > 0) ? 1 : $allWords[$word]['lowercase'];
+                }
+                else {
+                    $allWords[$word] = [
+                        'words_count' => $wordParams['words_count'],
+                        'uppercase' => $wordParams['uppercase'],
+                        'lowercase' => $wordParams['lowercase']
+                    ];
+                }
+
+                //$allWords[$word] = (array_key_exists($word, $allWords)) ? $allWords[$word] + $count : $count;
             }
         }
 
